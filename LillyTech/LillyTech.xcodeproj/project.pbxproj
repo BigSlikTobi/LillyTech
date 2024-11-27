@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		457683F62CF71743006FCAF6 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 457683F52CF71743006FCAF6 /* WebRTC */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		455F303F2CF367CE00F64647 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				457683F62CF71743006FCAF6 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = LillyTech;
 			packageProductDependencies = (
+				457683F52CF71743006FCAF6 /* WebRTC */,
 			);
 			productName = LillyTech;
 			productReference = 455F302E2CF367CC00F64647 /* LillyTech.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 455F30252CF367CC00F64647;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				457683F42CF71743006FCAF6 /* XCRemoteSwiftPackageReference "WebRTC" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 455F302F2CF367CC00F64647 /* Products */;
 			projectDirPath = "";
@@ -395,7 +404,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = 5A34C2WAYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -425,7 +434,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = 5A34C2WAYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -560,6 +569,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		457683F42CF71743006FCAF6 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 130.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		457683F52CF71743006FCAF6 /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 457683F42CF71743006FCAF6 /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 455F30262CF367CC00F64647 /* Project object */;
 }
