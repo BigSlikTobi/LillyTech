@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4597774A2CF8873A00E87FFD /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 459777492CF8873A00E87FFD /* WebRTC */; };
+		457683F62CF71743006FCAF6 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 457683F52CF71743006FCAF6 /* WebRTC */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4597774A2CF8873A00E87FFD /* WebRTC in Frameworks */,
+				457683F62CF71743006FCAF6 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,7 +117,7 @@
 			);
 			name = LillyTech;
 			packageProductDependencies = (
-				459777492CF8873A00E87FFD /* WebRTC */,
+				457683F52CF71743006FCAF6 /* WebRTC */,
 			);
 			productName = LillyTech;
 			productReference = 455F302E2CF367CC00F64647 /* LillyTech.app */;
@@ -202,7 +202,7 @@
 			mainGroup = 455F30252CF367CC00F64647;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				459777482CF8873A00E87FFD /* XCRemoteSwiftPackageReference "WebRTC" */,
+				457683F42CF71743006FCAF6 /* XCRemoteSwiftPackageReference "WebRTC" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 455F302F2CF367CC00F64647 /* Products */;
@@ -573,7 +573,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		459777482CF8873A00E87FFD /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+		457683F42CF71743006FCAF6 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stasel/WebRTC.git";
 			requirement = {
@@ -584,9 +584,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		459777492CF8873A00E87FFD /* WebRTC */ = {
+		457683F52CF71743006FCAF6 /* WebRTC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 459777482CF8873A00E87FFD /* XCRemoteSwiftPackageReference "WebRTC" */;
+			package = 457683F42CF71743006FCAF6 /* XCRemoteSwiftPackageReference "WebRTC" */;
 			productName = WebRTC;
 		};
 /* End XCSwiftPackageProductDependency section */
