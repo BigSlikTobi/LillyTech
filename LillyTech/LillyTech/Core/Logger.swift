@@ -1,12 +1,34 @@
 import OSLog
 import Foundation
 
-struct AppLogger {
+// Define LoggerProtocol at file scope
+protocol LoggerProtocol {
+    func debug(_ message: String, category: Logger)
+    func info(_ message: String, category: Logger)
+    func warning(_ message: String, category: Logger)
+    func error(_ message: String, category: Logger)
+}
+
+// Change AppLogger to a class and add a shared instance
+class AppLogger {
     private static let subsystem = "com.Transearly.LillyTech"
     
-    static let general = Logger(subsystem: subsystem, category: "general")
-    static let network = Logger(subsystem: subsystem, category: "network")
-    static let ui = Logger(subsystem: subsystem, category: "ui")
+    // Singleton instance
+    static let shared = AppLogger()
+    
+    // Logger categories as instance properties
+    let general: Logger
+    let network: Logger
+    let ui: Logger
+    let audio: Logger
+    
+    // Initialize loggers
+    private init() {
+        general = Logger(subsystem: AppLogger.subsystem, category: "general")
+        network = Logger(subsystem: AppLogger.subsystem, category: "network")
+        ui = Logger(subsystem: AppLogger.subsystem, category: "ui")
+        audio = Logger(subsystem: AppLogger.subsystem, category: "audio")
+    }
     
     enum Level {
         case debug
@@ -24,7 +46,8 @@ struct AppLogger {
         }
     }
     
-    static func log(_ message: String, level: Level, category: Logger = general, isProduction: Bool = false) {
+    // Convert static methods to instance methods
+    func log(_ message: String, level: Level, category: Logger = AppLogger.shared.general, isProduction: Bool = false) {
         #if DEBUG
         category.log(level: level.osLogType, "\(message)")
         #else
@@ -34,19 +57,19 @@ struct AppLogger {
         #endif
     }
     
-    static func debug(_ message: String, category: Logger = general) {
+    func debug(_ message: String, category: Logger = AppLogger.shared.general) {
         log(message, level: .debug, category: category)
     }
     
-    static func info(_ message: String, category: Logger = general) {
+    func info(_ message: String, category: Logger = AppLogger.shared.general) {
         log(message, level: .info, category: category)
     }
     
-    static func warning(_ message: String, category: Logger = general) {
+    func warning(_ message: String, category: Logger = AppLogger.shared.general) {
         log(message, level: .warning, category: category)
     }
     
-    static func error(_ message: String, category: Logger = general) {
+    func error(_ message: String, category: Logger = AppLogger.shared.general) {
         log(message, level: .error, category: category)
     }
 }

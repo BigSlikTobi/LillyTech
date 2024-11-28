@@ -19,7 +19,7 @@ final class PackageIntegrationTests: XCTestCase {
         XCTAssertEqual(config.iceServers.count, 1, "Should have one ICE server configured")
         XCTAssertEqual(config.iceServers.first?.urlStrings.first, "stun:stun.l.google.com:19302")
         
-        AppLogger.info("WebRTC configuration test completed", category: AppLogger.network)
+        AppLogger.shared.info("WebRTC configuration test completed", category: AppLogger.shared.network)
     }
     
     /// Tests the initialization and configuration of the audio device for WebRTC.
@@ -29,10 +29,10 @@ final class PackageIntegrationTests: XCTestCase {
         
         do {
             try audioSession.configureWebRTCSession()
-            AppLogger.debug("Audio session configured successfully", category: AppLogger.network)
+            AppLogger.shared.debug("Audio session configured successfully", category: AppLogger.shared.network)
         } catch {
-            AppLogger.error("Audio session configuration failed: \(error.localizedDescription)", 
-                          category: AppLogger.network)
+            AppLogger.shared.error("Audio session configuration failed: \(error.localizedDescription)", 
+                          category: AppLogger.shared.network)
             XCTFail("Audio session configuration failed: \(error)")
         }
     }
