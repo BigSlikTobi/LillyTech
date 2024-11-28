@@ -17,6 +17,8 @@ public enum AudioSessionError: Error {
     case mediaServerReset
 }
 
+/// Extends `AudioSessionError` to conform to the `LocalizedError` protocol,
+/// providing localized error descriptions for audio session-related issues.
 extension AudioSessionError: LocalizedError {
     public var errorDescription: String? {
         switch self {
@@ -90,6 +92,8 @@ public extension AudioSessionManaging {
         }
     }
     
+    /// Handles audio route changes by responding to the provided notification.
+    /// - Parameter notification: The notification containing information about the route change.
     func handleRouteChange(notification: Notification) {
         guard let userInfo = notification.userInfo,
               let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
@@ -118,22 +122,14 @@ protocol AudioSessionProtocol {
 // Extend AVAudioSession to conform to AudioSessionProtocol
 extension AVAudioSession: AudioSessionProtocol {}
 
-// Update LoggerProtocol to use static methods
-// Remove the LoggerProtocol declaration from this file
-// It is already declared in Logger.swift
-
 // Extend AppLogger to conform to LoggerProtocol
 extension AppLogger: LoggerProtocol {}
 
-// Ensure you have access to LoggerProtocol
-// If Logger.swift is in the same module, no additional import is needed
-
+/// Manages the audio session, handling configuration and control of audio-related functionalities within the app.
 final class AudioSessionManager {
     // MARK: - Dependencies
     private let audioSession: AudioSessionProtocol
     private let logger: LoggerProtocol
-
-    // Add the isConfigured property
     private var isConfigured = false
 
     // MARK: - Initialization
@@ -144,6 +140,10 @@ final class AudioSessionManager {
     }
 
     // MARK: - Public Methods
+
+    /// Configures the audio session for the application. This includes setting the
+    /// appropriate audio category, mode, and handling any potential errors that 
+    /// may occur during the configuration process.
     func configureAudioSession() throws {
         guard !isConfigured else { return }
         
@@ -161,6 +161,15 @@ final class AudioSessionManager {
         }
     }
     
+    /**
+     Deactivates the audio session.
+     
+     This function attempts to deactivate the current audio session. 
+     It performs necessary cleanup and ensures that the audio session is properly released. 
+     If the deactivation fails, an error is thrown.
+     
+     - Throws: An error describing why the audio session could not be deactivated.
+     */
     func deactivateAudioSession() throws {
         guard isConfigured else { return }
         
@@ -180,6 +189,10 @@ final class AudioSessionManager {
         audioSession.isOtherAudioPlaying
     }
     
+    /// Requests permission to record audio from the user.
+    ///
+    /// - Parameter completion: A closure that is called with a Boolean value
+    ///   indicating whether the permission was granted.
     func requestRecordPermission(_ completion: @escaping (Bool) -> Void) {
         audioSession.requestRecordPermission { granted in
             DispatchQueue.main.async { [weak self] in
@@ -192,7 +205,9 @@ final class AudioSessionManager {
     }
 }
 
-// In your AudioSessionManager implementation:
+/// Extension of `AudioSessionManager` to conform to the `AudioSessionManaging` protocol.
+/// This extension implements the necessary methods and properties to manage audio sessions,
+/// ensuring proper configuration and handling of audio-related functionalities within the application.
 extension AudioSessionManager: AudioSessionManaging {
     func start() -> Result<Void, AudioSessionError> {
         do {
@@ -208,6 +223,9 @@ extension AudioSessionManager: AudioSessionManaging {
         }
     }
     
+    /// Stops the audio session and returns a `Result` indicating whether the operation was successful 
+    /// or failed with an `AudioSessionError`.
+    /// - Returns: A `Result` with `Void` on success or an `AudioSessionError` on failure.
     func stop() -> Result<Void, AudioSessionError> {
         do {
             try deactivateAudioSession()
@@ -222,6 +240,9 @@ extension AudioSessionManager: AudioSessionManaging {
         }
     }
     
+    /// Configures the audio session for voice chat usage.
+    ///
+    /// - Returns: A `Result` indicating success or an `AudioSessionError`.
     func configureForVoiceChat() -> Result<Void, AudioSessionError> {
         do {
             try audioSession.setCategory(.playAndRecord,
@@ -257,6 +278,8 @@ final class AudioSessionState: ObservableObject {
     }
     
     // MARK: - Private Methods
+
+    /// Sets up observers for various audio session notifications.
     private func setupNotificationObservers() {
         // Route change notifications
         NotificationCenter.default
@@ -286,6 +309,9 @@ final class AudioSessionState: ObservableObject {
             .store(in: &cancellables)
     }
     
+    /// Handles changes to the audio route in response to system notifications.
+    ///
+    /// - Parameter notification: The notification object containing details about the route change.
     private func handleRouteChange(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
@@ -299,6 +325,8 @@ final class AudioSessionState: ObservableObject {
                       category: AppLogger.shared.audio)
     }
     
+    /// Handles audio session interruptions by managing the necessary state and resources.
+    /// - Parameter notification: The notification detailing the interruption event.
     private func handleInterruption(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
@@ -313,13 +341,14 @@ final class AudioSessionState: ObservableObject {
                       category: AppLogger.shared.audio)
     }
     
+    /// Handles the media server reset by reinitializing the audio session and restoring necessary settings.
     private func handleMediaServerReset() {
         isActive = audioSession.isOtherAudioPlaying
         currentRoute = audioSession.currentRoute
         AppLogger.shared.warning("Media server reset occurred", category: AppLogger.shared.audio)
     }
 }
-
+/// Extension to provide additional functionality for managing audio session state changes.
 extension AudioSessionState {
     // MARK: - Lifecycle Notification Setup
     private func setupLifecycleObservers() {
@@ -343,6 +372,8 @@ extension AudioSessionState {
     }
     
     // MARK: - Private Lifecycle Methods
+
+    /// Handles the transition to the background by deactivating the audio session.
     private func handleBackgroundTransition() {
         do {
             try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
@@ -354,6 +385,7 @@ extension AudioSessionState {
         }
     }
     
+    /// Handles the transition to the foreground by reactivating the audio session.
     private func handleForegroundTransition() {
         do {
             try audioSession.setActive(true)
@@ -367,6 +399,7 @@ extension AudioSessionState {
         }
     }
     
+    /// Provides a human-readable description of the route change reason. 
     private func routeChangeDescription(_ reason: AVAudioSession.RouteChangeReason) -> String {
         switch reason {
         case .newDeviceAvailable:
@@ -390,6 +423,7 @@ extension AudioSessionState {
         }
     }
     
+    /// Provides a human-readable description of the audio session interruption type.
     private func interruptionDescription(_ type: AVAudioSession.InterruptionType) -> String {
         switch type {
         case .began:
