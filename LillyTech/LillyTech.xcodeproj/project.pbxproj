@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4597774A2CF8873A00E87FFD /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 459777492CF8873A00E87FFD /* WebRTC */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		455F303F2CF367CE00F64647 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4597774A2CF8873A00E87FFD /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = LillyTech;
 			packageProductDependencies = (
+				459777492CF8873A00E87FFD /* WebRTC */,
 			);
 			productName = LillyTech;
 			productReference = 455F302E2CF367CC00F64647 /* LillyTech.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 455F30252CF367CC00F64647;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				459777482CF8873A00E87FFD /* XCRemoteSwiftPackageReference "WebRTC" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 455F302F2CF367CC00F64647 /* Products */;
 			projectDirPath = "";
@@ -321,6 +330,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "LillyTech needs microphone access for real-time audio translation.";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -378,6 +388,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "LillyTech needs microphone access for real-time audio translation.";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -395,7 +406,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = 5A34C2WAYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -425,7 +436,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"LillyTech/Resources/Preview Content\"";
 				DEVELOPMENT_TEAM = 5A34C2WAYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -560,6 +571,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		459777482CF8873A00E87FFD /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 130.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		459777492CF8873A00E87FFD /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 459777482CF8873A00E87FFD /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 455F30262CF367CC00F64647 /* Project object */;
 }

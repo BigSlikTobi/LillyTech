@@ -3,6 +3,18 @@ import OSLog
 @testable import LillyTech
 
 final class LoggerTests: XCTestCase {
+    private var logger: AppLogger!
+    
+    override func setUp() {
+        super.setUp()
+        logger = AppLogger.shared
+    }
+    
+    override func tearDown() {
+        logger = nil
+        super.tearDown()
+    }
+    
     func testLogLevels() {
         // Verify all log levels map correctly
         XCTAssertEqual(AppLogger.Level.debug.osLogType, .debug)
@@ -12,40 +24,36 @@ final class LoggerTests: XCTestCase {
     }
     
     func testLoggersExist() {
-        // Verify logger instances exist
-        XCTAssertNotNil(AppLogger.general)
-        XCTAssertNotNil(AppLogger.network)
-        XCTAssertNotNil(AppLogger.ui)
+        XCTAssertNotNil(logger.general)
+        XCTAssertNotNil(logger.network)
+        XCTAssertNotNil(logger.ui)
     }
     
     func testLoggingDoesNotCrash() {
-        // Verify logging calls don't crash
-        XCTAssertNoThrow(AppLogger.debug("Debug message"))
-        XCTAssertNoThrow(AppLogger.info("Info message"))
-        XCTAssertNoThrow(AppLogger.warning("Warning message"))
-        XCTAssertNoThrow(AppLogger.error("Error message"))
+        XCTAssertNoThrow(logger.debug("Debug message"))
+        XCTAssertNoThrow(logger.info("Info message"))
+        XCTAssertNoThrow(logger.warning("Warning message"))
+        XCTAssertNoThrow(logger.error("Error message"))
     }
     
     func testCategorySpecificLogging() {
-        // Test logging with different categories doesn't crash
-        XCTAssertNoThrow(AppLogger.debug("Network debug", category: AppLogger.network))
-        XCTAssertNoThrow(AppLogger.error("UI error", category: AppLogger.ui))
+        XCTAssertNoThrow(logger.debug("Network debug", category: logger.network))
+        XCTAssertNoThrow(logger.error("UI error", category: logger.ui))
     }
     
     func testProductionLogging() {
-        // Verify production logging doesn't crash
-        XCTAssertNoThrow(AppLogger.log("Production message", level: .info, isProduction: true))
-        XCTAssertNoThrow(AppLogger.log("Error message", level: .error, isProduction: false))
+        XCTAssertNoThrow(logger.log("Production message", level: .info, isProduction: true))
+        XCTAssertNoThrow(logger.log("Error message", level: .error, isProduction: false))
     }
     
     func testConvenienceMethods() {
-        AppLogger.debug("Debug message")
-        AppLogger.info("Info message")
-        AppLogger.warning("Warning message")
-        AppLogger.error("Error message")
+        logger.debug("Debug message")
+        logger.info("Info message")
+        logger.warning("Warning message")
+        logger.error("Error message")
         
         // Test with specific categories
-        AppLogger.debug("Network debug", category: AppLogger.network)
-        AppLogger.error("UI error", category: AppLogger.ui)
+        logger.debug("Network debug", category: logger.network)
+        logger.error("UI error", category: logger.ui)
     }
 }
