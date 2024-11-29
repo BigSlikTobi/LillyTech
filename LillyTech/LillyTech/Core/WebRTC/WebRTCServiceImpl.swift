@@ -2,6 +2,10 @@ import WebRTC
 import AVFAudio
 import OSLog
 
+
+/// `WebRTCServiceImpl` is a final class that implements the `WebRTCService` protocol.
+/// This class is responsible for handling WebRTC (Web Real-Time Communication) functionalities.
+/// It inherits from `NSObject` to leverage Objective-C runtime features.
 final class WebRTCServiceImpl: NSObject, WebRTCService {
     weak var delegate: WebRTCServiceDelegate?
     
@@ -166,6 +170,7 @@ final class WebRTCServiceImpl: NSObject, WebRTCService {
     }
 }
 
+/// Extension for `RTCPeerConnectionDelegate` conformance.
 extension WebRTCServiceImpl: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange state: RTCPeerConnectionState) {
         logger.debug("Connection state changed: \(String(describing: state))")
