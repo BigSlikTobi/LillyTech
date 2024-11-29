@@ -19,6 +19,11 @@ protocol WebRTCServiceDelegate: AnyObject {
     func webRTCService(_ service: WebRTCService, didGenerateOffer sdp: RTCSessionDescription)
 }
 
+/// A protocol that defines the core functionalities for a WebRTC service.
+/// Classes conforming to this protocol should implement methods and properties
+/// required to manage WebRTC connections and communication.
+///
+/// This protocol is intended to be used within the WebRTC module of the LillyTech project.
 protocol WebRTCService: AnyObject {
     var delegate: WebRTCServiceDelegate? { get set }
     var connectionState: RTCPeerConnectionState { get }
@@ -29,6 +34,9 @@ protocol WebRTCService: AnyObject {
     func handleRemoteCandidate(_ candidate: RTCIceCandidate)
 }
 
+/// The `WebRTCServiceImplementation` class is an implementation of the `WebRTCService` protocol.
+/// It provides the necessary functionality to manage WebRTC connections and interactions.
+/// This class inherits from `NSObject` to leverage Objective-C runtime features.
 class WebRTCServiceImplementation: NSObject, WebRTCService {
     weak var delegate: WebRTCServiceDelegate?
     private let logger = Logger(subsystem: "com.app.webrtc", category: "WebRTCService")
@@ -72,6 +80,9 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
         _peerConnection.close()
     }
     
+    /// Handles the remote session description received from the WebRTC connection.
+    /// - Parameter sdp: The session description protocol (SDP) object containing the remote session description.
+    /// This function processes the remote SDP to establish the WebRTC connection.
     func handleRemoteSessionDescription(_ sdp: RTCSessionDescription) {
         // Validate SDP first
         if sdp.sdp.isEmpty {
@@ -92,12 +103,18 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
         }
     }
     
+    /// Handles the remote ICE candidate received from the signaling server.
+    /// This function processes the given `RTCIceCandidate` and adds it to the
+    /// appropriate peer connection to establish a connection with the remote peer.
+    /// - Parameter candidate: The `RTCIceCandidate` object representing the remote
+    ///   candidate to be added to the peer connection.
     func handleRemoteCandidate(_ candidate: RTCIceCandidate) {
         _peerConnection.add(candidate) { _ in
             // Success case - no action needed
         }
     }
     
+    /// Creates an SDP offer to initiate the WebRTC connection.
     private func createOffer() {
         let constraints = RTCMediaConstraints(
             mandatoryConstraints: ["OfferToReceiveAudio": "true"],
@@ -116,6 +133,7 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
         }
     }
     
+    /// Creates an SDP answer in response to the received offer.
     private func createAnswer() {
         let constraints = RTCMediaConstraints(
             mandatoryConstraints: ["OfferToReceiveAudio": "true"],
@@ -135,6 +153,7 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
     }
 }
 
+/// Extension to conform to the `RTCPeerConnectionDelegate` protocol.
 extension WebRTCServiceImplementation: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange state: RTCPeerConnectionState) {
         delegate?.webRTCService(self, didChangeConnectionState: state)
@@ -149,7 +168,7 @@ extension WebRTCServiceImplementation: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange state: RTCSignalingState) {
         logger.debug("Signaling state changed: \(String(describing: state))")
     }
-    
+       
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
         logger.debug("Stream added: \(stream.streamId)")
     }
