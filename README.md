@@ -10,28 +10,38 @@ We've established a robust foundation for the application, starting with a well-
 
 The crown jewel of our current implementation is the Audio Session Management system. Think of it as a sophisticated traffic controller for your device's audio. When you're on a call and receive another call, or when you plug in your headphones, or switch to your car's Bluetooth - our AudioSessionManager handles all these scenarios seamlessly. It works behind the scenes to ensure your voice translation continues smoothly regardless of what's happening with your device.
 
-Here's how it works: The AudioSessionManager monitors various audio-related events and responds appropriately. When someone calls while you're using the app, it automatically pauses your session and resumes it when you're done. Switch to Bluetooth headphones? The manager detects this and reconfigures the audio routing without missing a beat. It's like having a personal audio assistant that anticipates and handles all these transitions for you.
-
-The AudioSessionState component works alongside the manager as a watchful monitor. Using SwiftUI's modern @Published properties, it keeps track of everything from whether your audio session is active to what kind of audio output you're currently using. When changes occur, like plugging in headphones or receiving a call, your app knows immediately and can adjust accordingly.
+Key Components:
+- **AudioSessionManager**: Handles audio routing and session management
+- **AudioSessionState**: Monitors and manages audio states reactively
+- **RTCAudioBuffer**: Provides thread-safe audio buffer management
+- **Comprehensive Testing**: Full test coverage for audio components
 
 ### What We're Building 🚧
 
-We're currently focused on several exciting features:
+1. WebRTC Integration
+   - STUN/TURN server configuration
+   - Real-time communication setup
+   - Peer connection management
 
-1. WebRTC Audio Integration: We're connecting our robust audio management system to WebRTC's real-time communication capabilities. This will enable high-quality, low-latency voice transmission essential for real-time translation.
-2. Translation Engine: The heart of our application, this component will process audio streams in real-time, converting spoken words from one language to another with minimal delay.
-3. User Interface: We're developing an intuitive interface that makes complex translation technology feel simple and accessible.
+2. Translation Engine
+   - Audio stream processing pipeline
+   - Real-time translation service
+   - Language detection and selection
+
+3. User Interface
+   - Intuitive controls for audio management
+   - Real-time status indicators
+   - Settings configuration
 
 ## Technical Foundation
 
-LillyTech is built for iOS 15.0 and above, taking advantage of the latest Swift 5.9 features. We use several key technologies:
+Built for iOS 15.0+ with:
+- WebRTC (via stasel/WebRTC)
+- OSLog for system-integrated logging
+- Combine for reactive programming
+- SwiftUI for modern UI
 
-- WebRTC (via stasel/WebRTC) powers our real-time communication
-- OSLog provides system-integrated logging
-- Combine enables reactive programming for state management
-
-Our project structure is thoughtfully organized to promote maintainability and scalability:
-
+Project Structure:
 ```
 LillyTech/
 ├── App/
@@ -48,29 +58,48 @@ LillyTech/
 
 ## Getting Started
 
-1. Clone our repository:
+1. Clone repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/BigSlikTobi/LillyTech/
 ```
 
-2. Open LillyTech.xcodeproj in Xcode
-3. Build and run - you're ready to start developing!
+2. Open LillyTech.xcodeproj
+3. Build and run
 
 ## Development Approach
 
-We maintain high code quality through comprehensive testing and careful version control. Our testing suite includes everything from unit tests for core components to integration tests for WebRTC services. We use mock-based testing for audio sessions, ensuring reliable behavior across different scenarios.
+We maintain high code quality through:
+- Comprehensive unit testing
+- Mock-based testing for components
+- Clear error handling patterns
+- Detailed logging system
 
-For logging, we've implemented a sophisticated system using OSLog, categorizing logs for different aspects of the application: general application flow, network operations, audio handling, and UI interactions. This makes debugging and monitoring the application's behavior straightforward and efficient.
+Our logging system categorizes:
+- General application flow
+- Network operations
+- Audio handling
+- UI interactions
 
 ## Looking Ahead
 
-We're working on several exciting enhancements:
+Upcoming features:
+1. Audio Stream Integration
+   - Real-time audio processing
+   - Buffer management optimization
+   - Latency reduction
 
-1. Audio Stream Processing: We're implementing real-time audio capture and processing, ensuring crystal-clear voice transmission.
-2. Translation Service Integration: Our next major feature will enable seamless real-time translation of audio streams.
-3. Enhanced User Experience: We're developing an interface that makes complex translation technology feel natural and intuitive.
+2. Translation Service
+   - Multiple language support
+   - Real-time translation pipeline
+   - Language auto-detection
 
-Want to contribute or learn more? Check out our additional documentation:
+3. Enhanced UI/UX
+   - Intuitive connection flow
+   - Visual feedback systems
+   - Performance optimizations
+
+## Documentation
+
 - [GitHub Workflow Guide](docs/workflow.md)
 - [Project Structure Details](docs/structure.md)
 - [Development Guidelines](docs/guidelines.md)
