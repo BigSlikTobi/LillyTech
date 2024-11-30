@@ -46,7 +46,7 @@ struct LillyTechTests {
         
         #expect(audioConfig != nil, "Should create audio configuration")
         
-        AppLogger.info("WebRTC initialization verified", category: AppLogger.network)
+        AppLogger.shared.info("WebRTC initialization verified")
     }
 
 }
