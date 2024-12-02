@@ -2,6 +2,67 @@ import XCTest
 import WebRTC
 @testable import LillyTech
 
+final class WebRTCConfigurationTests: XCTestCase {
+    
+    var sut: WebRTCConfiguration!
+    
+    override func setUp() {
+        super.setUp()
+        sut = WebRTCConfiguration()
+    }
+    
+    override func tearDown() {
+        sut = nil
+        super.tearDown()
+    }
+    
+    func testSTUNServersValidation() {
+        let config = sut.configuration
+        
+        // Verify we have exactly 5 STUN servers
+        XCTAssertEqual(config.iceServers.count, 5)
+        
+        // Verify server URLs are correctly formatted
+        let expectedBaseURL = "stun:stun"
+        let expectedSuffix = ".l.google.com:19302"
+        
+        config.iceServers.enumerated().forEach { index, server in
+            let serverURL = server.urlStrings.first!
+            if index == 0 {
+                XCTAssertEqual(serverURL, "\(expectedBaseURL)\(expectedSuffix)")
+            } else {
+                XCTAssertEqual(serverURL, "\(expectedBaseURL)\(index)\(expectedSuffix)")
+            }
+        }
+    }
+    
+    func testConfigurationLoading() {
+        let config = sut.configuration
+        
+        // Verify connection policies
+        XCTAssertEqual(config.bundlePolicy, .maxBundle)
+        XCTAssertEqual(config.rtcpMuxPolicy, .require)
+        XCTAssertEqual(config.tcpCandidatePolicy, .disabled)
+        XCTAssertEqual(config.continualGatheringPolicy, .gatherContinually)
+        XCTAssertEqual(config.keyType, .ECDSA)
+    }
+    
+    func testConnectionInitialization() {
+        let constraints = sut.defaultConstraints
+        
+        // Test mandatory constraints (non-optional dictionary)
+        XCTAssertEqual(constraints.mandatoryConstraints["OfferToReceiveAudio"], "true")
+        XCTAssertEqual(constraints.mandatoryConstraints["OfferToReceiveVideo"], "false")
+        
+        // Test optional constraints
+        XCTAssertNotNil(constraints.optionalConstraints)
+        if let optional = constraints.optionalConstraints {
+            XCTAssertEqual(optional["DtlsSrtpKeyAgreement"], "true")
+            XCTAssertEqual(optional["RtpDataChannels"], "true")
+        }
+    }
+}
+
 final class WebRTCAudioConfigurationTests: XCTestCase {
     
     func testValidConfiguration() throws {
