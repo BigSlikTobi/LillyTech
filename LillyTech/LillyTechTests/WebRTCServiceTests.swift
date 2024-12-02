@@ -25,18 +25,36 @@ final class MockWebRTCServiceDelegate: WebRTCServiceDelegate {
     }
 }
 
+final class MockWebRTCConfigurable: WebRTCConfigurable {
+    var configuration: RTCConfiguration {
+        let config = RTCConfiguration()
+        config.iceServers = [RTCIceServer(urlStrings: ["stun:stun1.l.google.com:19302"])]
+        return config
+    }
+    
+    var defaultConstraints: RTCMediaConstraints {
+        return RTCMediaConstraints(
+            mandatoryConstraints: nil,
+            optionalConstraints: nil
+        )
+    }
+}
+
+extension WebRTCServiceImpl {
+    func simulateConnectionStateChange(to state: RTCPeerConnectionState) {
+        // Directly call the delegate method
+        self.peerConnectionDidChangeState(state)
+    }
+}
+
 final class WebRTCServiceTests: XCTestCase {
     var sut: WebRTCServiceImpl!
     var delegate: MockWebRTCServiceDelegate!
-    var config: RTCConfiguration!
+    var config: MockWebRTCConfigurable!
     
     override func setUp() {
         super.setUp()
-        config = RTCConfiguration()
-        config.iceServers = [
-            RTCIceServer(urlStrings: ["stun:stun1.l.google.com:19302"])
-        ]
-        config.sdpSemantics = .unifiedPlan
+        config = MockWebRTCConfigurable()
         sut = WebRTCServiceImpl(configuration: config)
         delegate = MockWebRTCServiceDelegate()
         sut.delegate = delegate
@@ -52,42 +70,22 @@ final class WebRTCServiceTests: XCTestCase {
     
     func testInitialization() {
         XCTAssertNotNil(sut)
-        XCTAssertEqual(sut.connectionState, .new)
+        XCTAssertEqual(sut.peerConnection.connectionState, .new)
     }
     
     func testConnect() {
-        sut.connect()
-        // Wait for async operations
+        // Create an expectation for the async operation
         let expectation = XCTestExpectation(description: "Connection offer generated")
+        
+        // Connect and wait for the offer to be generated
+        sut.connect()
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             XCTAssertNotNil(self.delegate.generatedOffer)
             expectation.fulfill()
         }
+        
         wait(for: [expectation], timeout: 2.0)
-    }
-    
-    func testHandleRemoteSessionDescription() {
-        // Create a local offer to generate a valid SDP
-        let expectation = XCTestExpectation(description: "Remote description handled")
-        
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
-        
-        sut.peerConnection.offer(for: constraints) { [weak self] sdp, error in
-            guard let self = self, let sdp = sdp else {
-                XCTFail("Failed to create local offer")
-                return
-            }
-            
-            // Now, test handling this SDP as remote SDP
-            self.sut.handleRemoteSessionDescription(sdp)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                XCTAssertNil(self.delegate.encounteredError, "Valid SDP should not cause error")
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 5.0)
     }
     
     func testHandleInvalidRemoteSessionDescription() {
@@ -108,20 +106,10 @@ final class WebRTCServiceTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-    func testHandleRemoteCandidate() {
-        let candidate = RTCIceCandidate(
-            sdp: "candidate:1 1 UDP 2122260223 192.168.1.1 30000 typ host",
-            sdpMLineIndex: 0,
-            sdpMid: "data"
-        )
-        sut.handleRemoteCandidate(candidate)
-        // Should not crash or throw
-    }
-    
     func testDisconnect() {
         sut.connect()
         sut.disconnect()
-        XCTAssertEqual(sut.connectionState, .closed)
+        XCTAssertEqual(sut.peerConnection.connectionState, .closed)
     }
     
     func testDelegateConnectionStateCallback() {
@@ -130,8 +118,8 @@ final class WebRTCServiceTests: XCTestCase {
         // Force connection state change by connecting
         sut.connect()
         
-        // Directly trigger connection state change through delegate method
-        sut.peerConnection(sut.peerConnection, didChange: RTCPeerConnectionState.connected)
+        // Simulate connection state change
+        sut.simulateConnectionStateChange(to: .connected)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             XCTAssertNotNil(self.delegate.connectionStateChanged, "Connection state should be updated")

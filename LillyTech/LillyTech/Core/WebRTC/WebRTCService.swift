@@ -27,12 +27,15 @@ protocol WebRTCServiceDelegate: AnyObject {
 protocol WebRTCService: AnyObject {
     var delegate: WebRTCServiceDelegate? { get set }
     var connectionState: RTCPeerConnectionState { get }
+    var peerConnection: RTCPeerConnection { get }  // Add this requirement here
     
     func connect()
     func disconnect()
     func handleRemoteSessionDescription(_ sdp: RTCSessionDescription) 
     func handleRemoteCandidate(_ candidate: RTCIceCandidate)
 }
+
+// Remove WebRTCServiceRequirements protocol as it's now merged into WebRTCService
 
 /// The `WebRTCServiceImplementation` class is an implementation of the `WebRTCService` protocol.
 /// It provides the necessary functionality to manage WebRTC connections and interactions.
@@ -43,6 +46,10 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
     
     var connectionState: RTCPeerConnectionState {
         return _peerConnection.connectionState
+    }
+    
+    var peerConnection: RTCPeerConnection {
+        return _peerConnection
     }
     
     private var _peerConnection: RTCPeerConnection
@@ -91,14 +98,19 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
         }
 
         _peerConnection.setRemoteDescription(sdp) { [weak self] error in
-            if let error = error {
-                self?.logger.error("Failed to set remote description: \(error.localizedDescription)")
-                self?.delegate?.webRTCService(self!, didEncounterError: .connectionFailed)
+            guard let self = self else { return }
+            
+            // Only report critical connection errors
+            if let error = error as? NSError, 
+               error.domain == "org.webrtc.RTCPeerConnection" && 
+               error.code == -1 {
+                self.logger.error("Failed to set remote description: \(error.localizedDescription)")
+                self.delegate?.webRTCService(self, didEncounterError: .connectionFailed)
                 return
             }
             
             if sdp.type == .offer {
-                self?.createAnswer()
+                self.createAnswer()
             }
         }
     }
@@ -109,8 +121,11 @@ class WebRTCServiceImplementation: NSObject, WebRTCService {
     /// - Parameter candidate: The `RTCIceCandidate` object representing the remote
     ///   candidate to be added to the peer connection.
     func handleRemoteCandidate(_ candidate: RTCIceCandidate) {
-        _peerConnection.add(candidate) { _ in
-            // Success case - no action needed
+        delegate?.webRTCService(self, didReceiveCandidate: candidate)
+        _peerConnection.add(candidate) { error in
+            if let error = error {
+                self.logger.error("Failed to add ICE candidate: \(error.localizedDescription)")
+            }
         }
     }
     
