@@ -1,6 +1,32 @@
 import XCTest
 import WebRTC
+import OSLog
 @testable import LillyTech
+
+// Create a test-specific logger that captures messages
+fileprivate class WebRTCTestLogger: LoggerProtocol {
+    private(set) var messages: [String] = []
+    
+    func debug(_ message: String, category: Logger) {
+        messages.append(message)
+    }
+    
+    func info(_ message: String, category: Logger) {
+        messages.append(message)
+    }
+    
+    func warning(_ message: String, category: Logger) {
+        messages.append(message)
+    }
+    
+    func error(_ message: String, category: Logger) {
+        messages.append(message)
+    }
+    
+    func clear() {
+        messages.removeAll()
+    }
+}
 
 final class WebRTCConfigurationTests: XCTestCase {
     
@@ -197,5 +223,118 @@ final class WebRTCAudioConfigurationTests: XCTestCase {
         } else {
             XCTFail("Expected custom profile")
         }
+    }
+}
+
+final class WebRTCServerMonitoringTests: XCTestCase {
+    fileprivate var sut: WebRTCConfiguration!
+    fileprivate var mockServers: [ICEServer]!
+    fileprivate var testLogger: WebRTCTestLogger!
+    
+    override func setUp() {
+        super.setUp()
+        testLogger = WebRTCTestLogger()
+        let originalLogger = AppLogger.shared.webrtc  // Fixed typo from 'AppLog;ger' to 'AppLogger'
+        AppLogger.shared.webrtc = testLogger
+        addTeardownBlock { AppLogger.shared.webrtc = originalLogger }
+        
+        mockServers = [
+            ICEServer(urls: ["stun:mock1.test.com"], region: .northAmerica, priority: 100, timeout: 0.1, healthCheckInterval: 0.1),
+            ICEServer(urls: ["stun:mock2.test.com"], region: .europe, priority: 90, timeout: 0.1, healthCheckInterval: 0.1)
+        ]
+        
+        sut = WebRTCConfiguration()
+    }
+    
+    override func tearDown() {
+        mockServers = nil
+        sut = nil
+        super.tearDown()
+    }
+    
+    func testMetricsInitialization() {
+        let server = mockServers[0]
+        
+        XCTAssertEqual(server.metrics.atomicResponseTime.get(), 0)
+        XCTAssertEqual(server.metrics.atomicSuccessRate.get(), 100)
+        XCTAssertTrue(server.metrics.atomicIsHealthy.get())
+    }
+    
+    func testHealthStatusTransitions() async {
+        let server = mockServers[0]
+        let monitor = WebRTCConfiguration.ServerMonitor()
+        
+        // Simulate failed health checks
+        for _ in 1...5 {
+            monitor.updateMetricsForTesting(server, responseTime: 0, success: false)
+        }
+        
+        // Should be unhealthy after multiple failures
+        XCTAssertFalse(server.metrics.atomicIsHealthy.get())
+        XCTAssertLessThan(server.metrics.atomicSuccessRate.get(), 80)
+        
+        // Verify logger captured health transition
+        XCTAssertTrue(testLogger.messages.contains { $0.contains("health changed to unhealthy") })
+    }
+    
+    func testConcurrentMetricUpdates() async {
+        let server = mockServers[0]
+        let monitor = WebRTCConfiguration.ServerMonitor()
+        let expectation = XCTestExpectation(description: "Concurrent updates complete")
+        expectation.expectedFulfillmentCount = 100
+        
+        // Simulate multiple concurrent updates
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in
+            monitor.updateMetricsForTesting(server, responseTime: Double.random(in: 0...0.1), success: true)
+            expectation.fulfill()
+        }
+        
+        await fulfillment(of: [expectation], timeout: 5.0)
+        
+        // Verify metrics are still valid
+        XCTAssertTrue(server.metrics.atomicSuccessRate.get() >= 0)
+        XCTAssertTrue(server.metrics.atomicSuccessRate.get() <= 100)
+    }
+    
+    func testMonitoringLifecycle() async throws {
+        let expectation = XCTestExpectation(description: "Monitoring cycle completed")
+        
+        sut.startMonitoring()
+        XCTAssertTrue(testLogger.messages.contains { $0.contains("monitoring started") })
+        
+        // Wait a bit to ensure monitoring is running
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        
+        // Stop monitoring
+        sut.stopMonitoring()
+        
+        // Wait for monitoring to stop
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        
+        XCTAssertTrue(testLogger.messages.contains { $0.contains("monitoring stopped") })
+        expectation.fulfill()
+        
+        await fulfillment(of: [expectation], timeout: 2.0)
+    }
+    
+    // Add helper method to verify monitoring status
+    private func verifyMonitoringStatus(_ isRunning: Bool, timeout: TimeInterval = 1.0) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if testLogger.messages.contains(where: { 
+                $0.contains(isRunning ? "monitoring started" : "monitoring stopped")
+            }) {
+                return
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        XCTFail("Failed to verify monitoring status (expected: \(isRunning ? "running" : "stopped"))")
+    }
+}
+
+// Helper extension for testing
+extension WebRTCConfiguration.ServerMonitor {
+    func updateMetricsForTesting(_ server: ICEServer, responseTime: TimeInterval, success: Bool) {
+        updateMetrics(server, responseTime: responseTime, success: success)
     }
 }

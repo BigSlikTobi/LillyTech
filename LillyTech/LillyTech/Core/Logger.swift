@@ -9,6 +9,30 @@ protocol LoggerProtocol {
     func error(_ message: String, category: Logger)
 }
 
+class LoggerWrapper: LoggerProtocol {
+    private let logger: Logger
+    
+    init(_ logger: Logger) {
+        self.logger = logger
+    }
+    
+    func debug(_ message: String, category: Logger) {
+        logger.log(level: .debug, "\(message)")
+    }
+    
+    func info(_ message: String, category: Logger) {
+        logger.log(level: .info, "\(message)")
+    }
+    
+    func warning(_ message: String, category: Logger) {
+        logger.log(level: .default, "\(message)")
+    }
+    
+    func error(_ message: String, category: Logger) {
+        logger.log(level: .error, "\(message)")
+    }
+}
+
 // Change AppLogger to a class and add a shared instance
 class AppLogger {
     private static let subsystem = "com.Transearly.LillyTech"
@@ -21,6 +45,7 @@ class AppLogger {
     let network: Logger
     let ui: Logger
     let audio: Logger
+    public var webrtc: LoggerProtocol  // Change webrtc type to LoggerProtocol
     
     // Initialize loggers
     private init() {
@@ -28,6 +53,7 @@ class AppLogger {
         network = Logger(subsystem: AppLogger.subsystem, category: "network")
         ui = Logger(subsystem: AppLogger.subsystem, category: "ui")
         audio = Logger(subsystem: AppLogger.subsystem, category: "audio")
+        webrtc = LoggerWrapper(Logger(subsystem: AppLogger.subsystem, category: "webrtc"))  // Wrap Logger in LoggerWrapper
     }
     
     enum Level {
