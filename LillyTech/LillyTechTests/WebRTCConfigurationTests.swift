@@ -69,7 +69,7 @@ final class WebRTCConfigurationTests: XCTestCase {
         XCTAssertEqual(config.bundlePolicy, .maxBundle)
         XCTAssertEqual(config.rtcpMuxPolicy, .require)
         XCTAssertEqual(config.tcpCandidatePolicy, .disabled)
-        XCTAssertEqual(config.continualGatheringPolicy, .gatherContinually)
+        XCTAssertEqual(config.continualGatheringPolicy, .gatherOnce)
         XCTAssertEqual(config.keyType, .ECDSA)
     }
     

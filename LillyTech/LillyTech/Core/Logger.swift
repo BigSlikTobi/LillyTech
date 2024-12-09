@@ -46,6 +46,7 @@ class AppLogger {
     let ui: Logger
     let audio: Logger
     public var webrtc: LoggerProtocol  // Change webrtc type to LoggerProtocol
+    let signaling: Logger  // Add this line
     
     // Initialize loggers
     private init() {
@@ -54,6 +55,7 @@ class AppLogger {
         ui = Logger(subsystem: AppLogger.subsystem, category: "ui")
         audio = Logger(subsystem: AppLogger.subsystem, category: "audio")
         webrtc = LoggerWrapper(Logger(subsystem: AppLogger.subsystem, category: "webrtc"))  // Wrap Logger in LoggerWrapper
+        signaling = Logger(subsystem: AppLogger.subsystem, category: "signaling")
     }
     
     enum Level {
@@ -97,5 +99,22 @@ class AppLogger {
     
     func error(_ message: String, category: Logger = AppLogger.shared.general) {
         log(message, level: .error, category: category)
+    }
+    
+    // Add signaling-specific convenience methods
+    func debugSignaling(_ message: String) {
+        log(message, level: .debug, category: signaling)
+    }
+    
+    func infoSignaling(_ message: String) {
+        log(message, level: .info, category: signaling)
+    }
+    
+    func warningSignaling(_ message: String) {
+        log(message, level: .warning, category: signaling)
+    }
+    
+    func errorSignaling(_ message: String) {
+        log(message, level: .error, category: signaling)
     }
 }

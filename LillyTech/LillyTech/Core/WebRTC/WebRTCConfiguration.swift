@@ -13,6 +13,7 @@ struct ICEServer {
     let priority: Int
     let timeout: TimeInterval
     let healthCheckInterval: TimeInterval
+    let gatheringTimeout: TimeInterval
     
     enum Region: String {
         case northAmerica = "NA"
@@ -30,9 +31,22 @@ struct ICEServer {
     }
     
     var metrics: Metrics = Metrics()
+    
+    init(urls: [String], region: Region, priority: Int, timeout: TimeInterval, 
+         healthCheckInterval: TimeInterval, gatheringTimeout: TimeInterval = 5.0) {
+        self.urls = urls
+        self.region = region
+        self.priority = priority
+        self.timeout = timeout
+        self.healthCheckInterval = healthCheckInterval
+        self.gatheringTimeout = gatheringTimeout
+    }
 }
 
 struct WebRTCConfiguration: WebRTCConfigurable {
+    /// Default gathering timeout in seconds
+    let defaultGatheringTimeout: TimeInterval = 5.0
+    
     /// Ordered list of ICE servers with geographical distribution and health monitoring
     private let iceServers: [ICEServer] = [
         ICEServer(
@@ -89,8 +103,14 @@ struct WebRTCConfiguration: WebRTCConfigurable {
         config.bundlePolicy = .maxBundle
         config.rtcpMuxPolicy = .require
         config.tcpCandidatePolicy = .disabled
-        config.continualGatheringPolicy = .gatherContinually
+        config.continualGatheringPolicy = .gatherOnce
         config.keyType = .ECDSA
+        
+        // Set gathering policy
+        config.continualGatheringPolicy = .gatherOnce
+        
+        // Ice transport policy
+        config.iceTransportPolicy = .all
         
         return config
     }
