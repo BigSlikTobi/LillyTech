@@ -140,7 +140,7 @@ class ICEConnectionHandler: PeerConnectionType {
 }
 
 // Update WebRTCServiceImpl to use our custom protocols
-final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
+final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate, SignalingServiceDelegate {
     weak var delegate: WebRTCServiceDelegate?
     private let wrappedConnection: PeerConnection  // Renamed from peerConnection
     private let factory: RTCPeerConnectionFactory
@@ -154,6 +154,7 @@ final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
     private let monitoringService: WebRTCMonitoringService
     private let iceHandler: ICECandidateHandler<ICEConnectionHandler, RTCIceCandidate>
     private let reconnectionManager: WebRTCReconnectionManager<WebRTCServiceImpl>
+    private let connectionMonitor: WebRTCConnectionMonitor
     
     init(configuration: WebRTCConfigurable) {
         self.factory = RTCPeerConnectionFactory()
@@ -172,6 +173,7 @@ final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
         self.iceHandler = ICECandidateHandler<ICEConnectionHandler, RTCIceCandidate>(peerConnection: iceConnection)
         self.monitoringService = WebRTCMonitoringService(peerConnection: wrapper)
         self.reconnectionManager = WebRTCReconnectionManager<WebRTCServiceImpl>()
+        self.connectionMonitor = WebRTCConnectionMonitor(connection: wrapper)
         
         super.init()
         
@@ -194,6 +196,7 @@ final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
     
     /// Disconnects from the WebRTC service by closing the peer connection and resetting the audio session.
     func disconnect() {
+        connectionMonitor.stop()
         monitoringService.stopMonitoring()
         wrappedConnection.close()
         resetAudioSession()
@@ -305,6 +308,7 @@ final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
 
     // Implement PeerConnectionDelegate methods
     func peerConnectionDidChangeState(_ state: RTCPeerConnectionState) {
+        connectionMonitor.updateConnectionState(state)
         delegate?.webRTCService(self, didChangeConnectionState: state)
     }
     
@@ -313,8 +317,33 @@ final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
     }
     
     func peerConnectionDidChangeICEState(_ state: RTCIceConnectionState) {
-        if state == .disconnected || state == .failed {
+        switch state {
+        case .failed:
+            delegate?.webRTCService(self, didEncounterError: .connectionFailed)
             iceHandler.reset()
+        case .disconnected:
+            iceHandler.reset()
+        case .new:
+            // Initial state, ICE agent will start gathering candidates
+            logger.debug("ICE connection state: new")
+        case .checking:
+            // ICE agent is checking candidates
+            logger.debug("ICE connection state: checking")
+        case .connected:
+            // ICE agent has found viable connection
+            logger.debug("ICE connection state: connected")
+        case .completed:
+            // ICE agent has finished gathering candidates
+            logger.debug("ICE connection state: completed")
+        case .closed:
+            // ICE agent has shut down
+            logger.debug("ICE connection state: closed")
+        case .count:
+            // Internal state used by WebRTC, shouldn't occur in normal operation
+            break
+        @unknown default:
+            // Handle future cases that might be added
+            logger.warning("Unknown ICE connection state encountered")
         }
     }
     
@@ -327,5 +356,44 @@ final class WebRTCServiceImpl: NSObject, WebRTCService, PeerConnectionDelegate {
             fatalError("Invalid peer connection state")
         }
         return wrapper.rtcConnection
+    }
+    
+    // MARK: - SignalingServiceDelegate
+    func signalingService(_ service: SignalingService, didReceiveEvent event: SignalingEvent) {
+        switch event {
+        case .offer(let description):
+            handleRemoteSessionDescription(description.rtcSessionDescription)
+        case .answer(let description):
+            handleRemoteSessionDescription(description.rtcSessionDescription)
+        case .candidate(let candidate):
+            handleRemoteCandidate(candidate.rtcIceCandidate)
+        case .join(let roomInfo):
+            logger.debug("Peer joined room: \(roomInfo.roomId)")
+        case .leave(let roomInfo):
+            logger.debug("Peer left room: \(roomInfo.roomId)")
+        case .error(let error):
+            delegate?.webRTCService(self, didEncounterError: .connectionFailed)
+            logger.error("Signaling error: \(error)")
+        case .peerJoined(let peerId):
+            logger.debug("New peer joined: \(peerId)")
+        case .peerLeft(let peerId):
+            logger.debug("Peer left: \(peerId)")
+        case .heartbeat:
+            logger.debug("Received heartbeat")
+        }
+    }
+    
+    func signalingService(_ service: SignalingService, didEncounterError error: WebRTCSignalingError) {
+        logger.error("Signaling error: \(error.localizedDescription)")
+        delegate?.webRTCService(self, didEncounterError: .connectionFailed)
+    }
+    
+    func signalingServiceDidConnect(_ service: SignalingService) {
+        logger.debug("Signaling service connected")
+    }
+    
+    func signalingServiceDidDisconnect(_ service: SignalingService) {
+        logger.debug("Signaling service disconnected")
+        disconnect()
     }
 }
